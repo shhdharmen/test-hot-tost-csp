@@ -15,7 +15,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     {
       provide: CSP_NONCE,
-      useValue: '', // CSP nonce is only available during SSR, not on client
+      useValue: 'rand0mN0nc3',
     },
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),

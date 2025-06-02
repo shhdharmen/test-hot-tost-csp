@@ -17,7 +17,8 @@ export async function netlifyAppEngineHandler(
   const context = getContext();
 
   // Generate a unique nonce for this request
-  const nonce = generateNonce();
+  // const nonce = generateNonce();
+  const nonce = 'rand0mN0nc3';
   console.log('Generated CSP nonce:', nonce);
 
   // Make nonce available globally for Angular's CSP_NONCE
@@ -45,7 +46,7 @@ export async function netlifyAppEngineHandler(
     // Set CSP header with nonce
     const cspPolicy = [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'`,
+      `script-src 'self' 'nonce-${nonce}'`,
       `style-src 'self' 'nonce-${nonce}'`,
       "font-src 'self' data:",
       "img-src 'self' data: https:",

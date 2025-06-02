@@ -15,12 +15,7 @@ const serverConfig: ApplicationConfig = {
     provideServerRendering(withRoutes(serverRoutes)),
     {
       provide: CSP_NONCE,
-      useFactory: () => {
-        // Use the global nonce that was set in server.ts
-        const nonce = (globalThis as any)?.cspNonce || '';
-        console.log('Server CSP_NONCE factory called with nonce:', nonce);
-        return nonce;
-      },
+      useValue: 'rand0mN0nc3',
     },
   ],
 };
