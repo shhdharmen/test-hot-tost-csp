@@ -45,7 +45,7 @@ export async function netlifyAppEngineHandler(
     // Set CSP header with nonce
     const cspPolicy = [
       "default-src 'self'",
-      `script-src 'self' 'nonce-${nonce}'`,
+      `script-src 'self' 'unsafe-inline'`,
       `style-src 'self' 'nonce-${nonce}'`,
       "font-src 'self' data:",
       "img-src 'self' data: https:",
@@ -71,81 +71,8 @@ export async function netlifyAppEngineHandler(
       'camera=(), microphone=(), geolocation=()'
     );
 
-    // Get the response body and inject nonce into app-root
-    let body = await result.text();
-
-    // Inject ngCspNonce attribute into app-root element (handles any existing attributes)
-    body = body.replace(
-      /<app-root([^>]*?)(\s*\/?>)/,
-      `<app-root$1 ngCspNonce="${nonce}"$2`
-    );
-
-    // Inject nonce into any script tags (handles any existing attributes)
-    body = body.replace(/<script([^>]*?)>/g, `<script$1 nonce="${nonce}">`);
-
-    // Inject a script to handle dynamically created scripts at runtime
-    const escapedNonce = nonce.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    const nonceScript =
-      '<script nonce="' +
-      escapedNonce +
-      '">\n' +
-      '  (function() {\n' +
-      "    const nonce = '" +
-      escapedNonce +
-      "';\n" +
-      "    console.log('Runtime nonce handler loaded with nonce:', nonce);\n" +
-      '    \n' +
-      '    // Override createElement to automatically add nonce to script elements\n' +
-      '    const originalCreateElement = document.createElement;\n' +
-      '    document.createElement = function(tagName) {\n' +
-      '      const element = originalCreateElement.call(this, tagName);\n' +
-      "      if (tagName.toLowerCase() === 'script' && nonce) {\n" +
-      "        element.setAttribute('nonce', nonce);\n" +
-      "        console.log('Added nonce to dynamically created script:', nonce);\n" +
-      '      }\n' +
-      '      return element;\n' +
-      '    };\n' +
-      '    \n' +
-      '    // Also watch for any script elements added via innerHTML or other methods\n' +
-      '    const observer = new MutationObserver(function(mutations) {\n' +
-      '      mutations.forEach(function(mutation) {\n' +
-      '        mutation.addedNodes.forEach(function(node) {\n' +
-      '          if (node.nodeType === 1) { // Element node\n' +
-      "            if (node.tagName === 'SCRIPT' && !node.getAttribute('nonce') && nonce) {\n" +
-      "              node.setAttribute('nonce', nonce);\n" +
-      "              console.log('Added nonce to observed script element:', nonce);\n" +
-      '            }\n' +
-      '            // Check child script elements too\n' +
-      "            const scriptTags = node.querySelectorAll && node.querySelectorAll('script');\n" +
-      '            if (scriptTags) {\n' +
-      '              scriptTags.forEach(function(script) {\n' +
-      "                if (!script.getAttribute('nonce') && nonce) {\n" +
-      "                  script.setAttribute('nonce', nonce);\n" +
-      "                  console.log('Added nonce to child script element:', nonce);\n" +
-      '                }\n' +
-      '              });\n' +
-      '            }\n' +
-      '          }\n' +
-      '        });\n' +
-      '      });\n' +
-      '    });\n' +
-      '    \n' +
-      '    observer.observe(document.body || document.documentElement, {\n' +
-      '      childList: true,\n' +
-      '      subtree: true\n' +
-      '    });\n' +
-      '  })();\n' +
-      '</script>';
-
-    // Insert the nonce script before the closing </head> tag
-    body = body.replace('</head>', nonceScript + '\n</head>');
-
-    console.log('Injected ngCspNonce into app-root:', nonce);
-    console.log('Injected nonce into script tags:', nonce);
-    console.log('Injected runtime nonce handler:', nonce);
-
-    // Create a new response with the updated headers and modified body
-    const response = new Response(body, {
+    // Create a new response with the updated headers
+    const response = new Response(result.body, {
       status: result.status,
       statusText: result.statusText,
       headers: headers,
