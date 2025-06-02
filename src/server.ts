@@ -45,7 +45,7 @@ export async function netlifyAppEngineHandler(
     // Set CSP header with nonce
     const cspPolicy = [
       "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'`,
+      `script-src 'self' 'nonce-${nonce}'`,
       `style-src 'self' 'nonce-${nonce}'`,
       "font-src 'self' data:",
       "img-src 'self' data: https:",
@@ -71,8 +71,19 @@ export async function netlifyAppEngineHandler(
       'camera=(), microphone=(), geolocation=()'
     );
 
-    // Create a new response with the updated headers
-    const response = new Response(result.body, {
+    // Get the response body and inject nonce into app-root
+    let body = await result.text();
+
+    // Inject ngCspNonce attribute into app-root element
+    body = body.replace(
+      '<app-root></app-root>',
+      `<app-root ngCspNonce="${nonce}"></app-root>`
+    );
+
+    console.log('Injected ngCspNonce into app-root:', nonce);
+
+    // Create a new response with the updated headers and modified body
+    const response = new Response(body, {
       status: result.status,
       statusText: result.statusText,
       headers: headers,
