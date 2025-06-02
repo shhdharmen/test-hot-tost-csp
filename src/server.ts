@@ -45,7 +45,7 @@ export async function netlifyAppEngineHandler(
     // Set CSP header with nonce
     const cspPolicy = [
       "default-src 'self'",
-      `script-src 'self' 'nonce-${nonce}'`,
+      `script-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
       `style-src 'self' 'nonce-${nonce}'`,
       "font-src 'self' data:",
       "img-src 'self' data: https:",
