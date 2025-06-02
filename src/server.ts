@@ -57,29 +57,6 @@ app.use(
 //   });
 // }
 
-/**
- * Generate a comprehensive CSP policy for Angular SSR applications
- */
-function generateCSPPolicy(): string {
-  const cspDirectives = [
-    "default-src 'self'",
-    "script-src 'self' 'nonce-{{nonce}}'", // Netlify plugin will replace {{nonce}}
-    "style-src 'self' 'nonce-{{nonce}}'", // Use nonces for styles instead of unsafe-inline
-    "font-src 'self' data:",
-    "img-src 'self' data: https:",
-    "connect-src 'self'",
-    "frame-src 'none'",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    'block-all-mixed-content',
-    'upgrade-insecure-requests',
-  ];
-
-  return cspDirectives.join('; ');
-}
-
 export async function netlifyAppEngineHandler(
   request: Request
 ): Promise<Response> {
@@ -93,32 +70,7 @@ export async function netlifyAppEngineHandler(
   // }
 
   const result = await angularApp.handle(request, context);
-
-  if (result) {
-    // Clone the response to add CSP headers
-    const headers = new Headers(result.headers);
-
-    // Add Content Security Policy header
-    headers.set('Content-Security-Policy', generateCSPPolicy());
-
-    // Add additional security headers
-    headers.set('X-Content-Type-Options', 'nosniff');
-    headers.set('X-Frame-Options', 'DENY');
-    headers.set('X-XSS-Protection', '1; mode=block');
-    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    headers.set(
-      'Permissions-Policy',
-      'camera=(), microphone=(), geolocation=()'
-    );
-
-    return new Response(result.body, {
-      status: result.status,
-      statusText: result.statusText,
-      headers: headers,
-    });
-  }
-
-  return new Response('Not found', { status: 404 });
+  return result || new Response('Not found', { status: 404 });
 }
 
 /**
