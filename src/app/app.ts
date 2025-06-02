@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, Inject, inject, Optional } from '@angular/core';
 import { HotToastService } from '@ngxpert/hot-toast';
+import type { Context } from '@netlify/edge-functions';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,15 @@ import { HotToastService } from '@ngxpert/hot-toast';
 export class App {
   protected title = 'test-hot-tost-csp';
   protected toast = inject(HotToastService);
+
+  constructor(
+    // ...
+    @Inject('netlify.request') @Optional() request?: Request,
+    @Inject('netlify.context') @Optional() context?: Context
+  ) {
+    console.log(JSON.stringify(request, null, 2));
+    console.log(JSON.stringify(context, null, 2));
+  }
 
   showToast() {
     this.toast.success('Look at my styles', {
