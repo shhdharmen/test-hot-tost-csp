@@ -16,10 +16,12 @@ export class App {
   constructor(
     // ...
     @Inject('netlify.request') @Optional() request?: Request,
-    @Inject('netlify.context') @Optional() context?: Context
+    @Inject('netlify.context') @Optional() context?: Context,
+    @Inject('netlify.response') @Optional() response?: Response
   ) {
     console.log(request?.json() ?? 'no request');
     console.log(context ?? 'no context');
+    console.log(response?.json() ?? 'no response');
   }
 
   showToast() {
