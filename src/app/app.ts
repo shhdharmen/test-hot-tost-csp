@@ -18,8 +18,8 @@ export class App {
     @Inject('netlify.request') @Optional() request?: Request,
     @Inject('netlify.context') @Optional() context?: Context
   ) {
-    console.log(request);
-    console.log(context);
+    console.log(request?.json() ?? 'no request');
+    console.log(context ?? 'no context');
   }
 
   showToast() {
