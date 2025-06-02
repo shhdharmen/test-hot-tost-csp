@@ -63,8 +63,8 @@ app.use(
 function generateCSPPolicy(): string {
   const cspDirectives = [
     "default-src 'self'",
-    "script-src 'self' 'nonce-{{CSP_NONCE}}'", // Netlify plugin will replace {{CSP_NONCE}}
-    "style-src 'self' 'nonce-{{CSP_NONCE}}'", // Use nonces for styles instead of unsafe-inline
+    "script-src 'self' 'nonce-{{nonce}}'", // Netlify plugin will replace {{nonce}}
+    "style-src 'self' 'nonce-{{nonce}}'", // Use nonces for styles instead of unsafe-inline
     "font-src 'self' data:",
     "img-src 'self' data: https:",
     "connect-src 'self'",
