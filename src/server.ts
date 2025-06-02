@@ -80,7 +80,11 @@ export async function netlifyAppEngineHandler(
       `<app-root$1 ngCspNonce="${nonce}"$2`
     );
 
+    // Inject nonce into any script tags (handles any existing attributes)
+    body = body.replace(/<script([^>]*?)>/g, `<script$1 nonce="${nonce}">`);
+
     console.log('Injected ngCspNonce into app-root:', nonce);
+    console.log('Injected nonce into script tags:', nonce);
 
     // Create a new response with the updated headers and modified body
     const response = new Response(body, {
