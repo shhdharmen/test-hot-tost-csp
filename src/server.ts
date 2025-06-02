@@ -74,10 +74,10 @@ export async function netlifyAppEngineHandler(
     // Get the response body and inject nonce into app-root
     let body = await result.text();
 
-    // Inject ngCspNonce attribute into app-root element
+    // Inject ngCspNonce attribute into app-root element (handles any existing attributes)
     body = body.replace(
-      '<app-root></app-root>',
-      `<app-root ngCspNonce="${nonce}"></app-root>`
+      /<app-root([^>]*?)(\s*\/?>)/,
+      `<app-root$1 ngCspNonce="${nonce}"$2`
     );
 
     console.log('Injected ngCspNonce into app-root:', nonce);
