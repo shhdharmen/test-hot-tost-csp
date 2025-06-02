@@ -7,6 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "preserve:ssr:test-hot-tost-csp": "ng build --configuration development",
     "serve:ssr:test-hot-tost-csp": "node dist/test-hot-tost-csp/server/server.mjs"
   },
   "private": true,
@@ -19,6 +20,8 @@
     "@angular/platform-server": "^20.0.0",
     "@angular/router": "^20.0.0",
     "@angular/ssr": "^20.0.0",
+    "@ngneat/overview": "6.1.1",
+    "@ngxpert/hot-toast": "^5.0.0",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

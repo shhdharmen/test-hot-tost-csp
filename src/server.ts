@@ -6,11 +6,50 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
-
+import { randomBytes } from 'node:crypto';
+``;
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+
+/**
+ * Content Security Policy middleware
+ * Add CSP headers to all responses for enhanced security using nonces
+ */
+app.use((req, res, next) => {
+  // Generate a unique nonce for each request
+  const nonce = randomBytes(16).toString('base64');
+
+  // Store nonce in res.locals so it can be accessed by Angular SSR
+  res.locals['cspNonce'] = nonce;
+
+  const cspDirectives = [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    `style-src 'self' 'nonce-${nonce}'`,
+    "img-src 'self' data: https:",
+    "font-src 'self' data:",
+    "connect-src 'self'",
+    "media-src 'self'",
+    "object-src 'none'",
+    "frame-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    'upgrade-insecure-requests',
+  ].join('; ');
+
+  res.setHeader('Content-Security-Policy', cspDirectives);
+
+  // Additional security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  next();
+});
 
 /**
  * Example Express Rest API endpoints can be defined here.
@@ -32,7 +71,7 @@ app.use(
     maxAge: '1y',
     index: false,
     redirect: false,
-  }),
+  })
 );
 
 /**
@@ -42,7 +81,7 @@ app.use((req, res, next) => {
   angularApp
     .handle(req)
     .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
+      response ? writeResponseToNodeResponse(response, res) : next()
     )
     .catch(next);
 });
