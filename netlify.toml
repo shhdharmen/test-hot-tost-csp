@@ -3,8 +3,9 @@
   functions = "netlify/functions"
   publish = "dist/test-hot-tost-csp/browser"
 
-[[plugins]]
-  package = "@netlify/plugin-csp-nonce"
+# Removed @netlify/plugin-csp-nonce plugin to avoid conflicts with custom nonce implementation
+# [[plugins]]
+#   package = "@netlify/plugin-csp-nonce"
 
 # CSP headers are now set dynamically in server.ts with nonces
 # Keeping only the other security headers for static assets
