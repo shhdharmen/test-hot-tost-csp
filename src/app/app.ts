@@ -1,4 +1,4 @@
-import { Component, Inject, inject, Optional } from '@angular/core';
+import { Component, Inject, inject, Optional, CSP_NONCE } from '@angular/core';
 import { HotToastService } from '@ngxpert/hot-toast';
 import type { Context } from '@netlify/edge-functions';
 
@@ -11,6 +11,7 @@ import type { Context } from '@netlify/edge-functions';
 export class App {
   protected title = 'test-hot-tost-csp';
   protected toast = inject(HotToastService);
+  protected cspNonce = inject(CSP_NONCE, { optional: true });
 
   constructor(
     // ...
@@ -20,6 +21,7 @@ export class App {
     console.log(
       `Rendering Foo for path ${request?.url} from location ${context?.geo?.city}`
     );
+    console.log('CSP Nonce available:', this.cspNonce);
     // ...
   }
 

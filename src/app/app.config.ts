@@ -13,11 +13,10 @@ import { provideHotToastConfig } from '@ngxpert/hot-toast';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // {
-    //   provide: CSP_NONCE,
-    //   // TODO
-    //   // useValue: inject(CSP_NONCE),
-    // },
+    {
+      provide: CSP_NONCE,
+      useValue: '', // CSP nonce is only available during SSR, not on client
+    },
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideClientHydration(withEventReplay()),
