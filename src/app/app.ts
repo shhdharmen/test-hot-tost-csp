@@ -1,7 +1,6 @@
 import { Component, Inject, inject, Optional } from '@angular/core';
 import { HotToastService } from '@ngxpert/hot-toast';
 import type { Context } from '@netlify/edge-functions';
-import {} from '@netlify/edge-functions';
 
 @Component({
   selector: 'app-root',
