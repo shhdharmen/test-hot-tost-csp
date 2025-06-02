@@ -1,6 +1,7 @@
 import { Component, Inject, inject, Optional } from '@angular/core';
 import { HotToastService } from '@ngxpert/hot-toast';
 import type { Context } from '@netlify/edge-functions';
+import {} from '@netlify/edge-functions';
 
 @Component({
   selector: 'app-root',
@@ -17,8 +18,8 @@ export class App {
     @Inject('netlify.request') @Optional() request?: Request,
     @Inject('netlify.context') @Optional() context?: Context
   ) {
-    console.log(JSON.stringify(request, null, 2));
-    console.log(JSON.stringify(context, null, 2));
+    console.log(request);
+    console.log(context);
   }
 
   showToast() {
