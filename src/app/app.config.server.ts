@@ -4,6 +4,7 @@ import {
   CSP_NONCE,
   inject,
   REQUEST_CONTEXT,
+  DOCUMENT,
 } from '@angular/core';
 import { provideServerRendering, withRoutes } from '@angular/ssr';
 import { appConfig } from './app.config';
@@ -16,7 +17,9 @@ const serverConfig: ApplicationConfig = {
       provide: CSP_NONCE,
       useFactory: () => {
         // Use the global nonce that was set in server.ts
-        return (globalThis as any)?.cspNonce || '';
+        const nonce = (globalThis as any)?.cspNonce || '';
+        console.log('Server CSP_NONCE factory called with nonce:', nonce);
+        return nonce;
       },
     },
   ],

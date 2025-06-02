@@ -83,8 +83,61 @@ export async function netlifyAppEngineHandler(
     // Inject nonce into any script tags (handles any existing attributes)
     body = body.replace(/<script([^>]*?)>/g, `<script$1 nonce="${nonce}">`);
 
+    // Inject a script to handle dynamically created scripts at runtime
+    const nonceScript = `
+    <script nonce="${nonce}">
+      (function() {
+        const nonce = '${nonce}';
+        console.log('Runtime nonce handler loaded with nonce:', nonce);
+        
+        // Override createElement to automatically add nonce to script elements
+        const originalCreateElement = document.createElement;
+        document.createElement = function(tagName) {
+          const element = originalCreateElement.call(this, tagName);
+          if (tagName.toLowerCase() === 'script' && nonce) {
+            element.setAttribute('nonce', nonce);
+            console.log('Added nonce to dynamically created script:', nonce);
+          }
+          return element;
+        };
+        
+        // Also watch for any script elements added via innerHTML or other methods
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+              if (node.nodeType === 1) { // Element node
+                if (node.tagName === 'SCRIPT' && !node.getAttribute('nonce') && nonce) {
+                  node.setAttribute('nonce', nonce);
+                  console.log('Added nonce to observed script element:', nonce);
+                }
+                // Check child script elements too
+                const scriptTags = node.querySelectorAll && node.querySelectorAll('script');
+                if (scriptTags) {
+                  scriptTags.forEach(function(script) {
+                    if (!script.getAttribute('nonce') && nonce) {
+                      script.setAttribute('nonce', nonce);
+                      console.log('Added nonce to child script element:', nonce);
+                    }
+                  });
+                }
+              }
+            });
+          });
+        });
+        
+        observer.observe(document.body || document.documentElement, {
+          childList: true,
+          subtree: true
+        });
+      })();
+    </script>`;
+
+    // Insert the nonce script before the closing </head> tag
+    body = body.replace('</head>', nonceScript + '\n</head>');
+
     console.log('Injected ngCspNonce into app-root:', nonce);
     console.log('Injected nonce into script tags:', nonce);
+    console.log('Injected runtime nonce handler:', nonce);
 
     // Create a new response with the updated headers and modified body
     const response = new Response(body, {
