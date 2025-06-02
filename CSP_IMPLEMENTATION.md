@@ -11,6 +11,7 @@ This Angular application is configured with Content Security Policy (CSP) using 
 - Makes the nonce available globally for Angular's CSP_NONCE token
 - Passes the nonce through Netlify context for component access
 - Includes debug logging to troubleshoot CSP header application
+- **Edge Function Compatible**: Removed Express static file serving (handled by Netlify automatically)
 
 ### 2. Angular CSP_NONCE Integration
 
@@ -78,6 +79,7 @@ export class MyComponent {
 2. **Local Development**: Use `netlify serve` to test CSP headers locally
 3. **Production**: Deploy to Netlify and check browser developer tools for CSP headers
 4. **Verify Headers**: Use browser DevTools Network tab to inspect response headers
+5. **CLI Testing**: `curl -I https://your-site.netlify.app/` to check headers
 
 ## Important Notes
 
@@ -86,6 +88,7 @@ export class MyComponent {
 - `'unsafe-inline'` is included for styles to support some Angular components that inject styles dynamically
 - Hot Toast library styles are configured to work with the CSP policy
 - Check the server logs for CSP nonce generation and policy setting debug information
+- **Edge Function Compatibility**: Static file serving is handled by Netlify, not in the Edge Function
 
 ## Troubleshooting
 
@@ -95,3 +98,9 @@ If CSP headers are not appearing:
 2. Check the Network tab in DevTools for response headers
 3. Look for console logs about nonce generation and CSP policy setting
 4. Ensure the application is deployed to Netlify (not just statically hosted)
+
+If you get Edge Function file system errors:
+
+1. Remove any file system access code from `server.ts`
+2. Don't use `express.static()` or similar file serving in Edge Functions
+3. Netlify handles static asset serving automatically
