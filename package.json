@@ -21,7 +21,7 @@
     "@angular/router": "^20.0.0",
     "@angular/ssr": "^20.0.0",
     "@ngneat/overview": "6.1.1",
-    "@ngxpert/hot-toast": "^5.0.0",
+    "@ngxpert/hot-toast": "^5.0.1-beta.1",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
