@@ -42,11 +42,11 @@ export async function netlifyAppEngineHandler(
     // Create new headers including CSP with nonce
     const headers = new Headers(result.headers);
 
-    // Set CSP header with nonce - proper formatting with semicolons and spaces
+    // Set CSP header with nonce
     const cspPolicy = [
       "default-src 'self'",
       `script-src 'self' 'nonce-${nonce}'`,
-      `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
+      `style-src 'self' 'nonce-${nonce}'`,
       "font-src 'self' data:",
       "img-src 'self' data: https:",
       "connect-src 'self'",
