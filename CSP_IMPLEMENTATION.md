@@ -10,6 +10,7 @@ This Angular application is configured with Content Security Policy (CSP) using 
 - Sets CSP headers dynamically with the nonce
 - Makes the nonce available globally for Angular's CSP_NONCE token
 - Passes the nonce through Netlify context for component access
+- Includes debug logging to troubleshoot CSP header application
 
 ### 2. Angular CSP_NONCE Integration
 
@@ -17,7 +18,13 @@ This Angular application is configured with Content Security Policy (CSP) using 
 - **Client Config** (`src/app/app.config.ts`): Provides an empty CSP_NONCE for client-side hydration
 - **Component Usage** (`src/app/app.ts`): Demonstrates how to inject and use the nonce in components
 
-### 3. CSP Policy
+### 3. Route Configuration (`src/app/app.routes.server.ts`)
+
+- **CRITICAL**: Routes are configured with `RenderMode.Server` instead of `RenderMode.Prerender`
+- This ensures each request goes through the server handler where CSP headers are set
+- Prerendered pages are static and cannot have dynamic nonces
+
+### 4. CSP Policy
 
 The following CSP policy is enforced:
 
@@ -37,7 +44,7 @@ block-all-mixed-content;
 upgrade-insecure-requests
 ```
 
-### 4. Netlify Configuration (`netlify.toml`)
+### 5. Netlify Configuration (`netlify.toml`)
 
 - Uses `@netlify/plugin-csp-nonce` plugin
 - Static CSP headers removed (now set dynamically)
@@ -70,9 +77,21 @@ export class MyComponent {
 1. **Build**: `npm run build` - Ensures no CSP-related build errors
 2. **Local Development**: Use `netlify serve` to test CSP headers locally
 3. **Production**: Deploy to Netlify and check browser developer tools for CSP headers
+4. **Verify Headers**: Use browser DevTools Network tab to inspect response headers
 
-## Notes
+## Important Notes
 
+- ⚠️ **Routes must use `RenderMode.Server`** - Prerendered routes won't have CSP headers
 - The nonce is only available during SSR, not on the client-side after hydration
 - `'unsafe-inline'` is included for styles to support some Angular components that inject styles dynamically
 - Hot Toast library styles are configured to work with the CSP policy
+- Check the server logs for CSP nonce generation and policy setting debug information
+
+## Troubleshooting
+
+If CSP headers are not appearing:
+
+1. Verify routes are using `RenderMode.Server` in `app.routes.server.ts`
+2. Check the Network tab in DevTools for response headers
+3. Look for console logs about nonce generation and CSP policy setting
+4. Ensure the application is deployed to Netlify (not just statically hosted)

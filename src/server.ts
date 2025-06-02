@@ -72,6 +72,7 @@ export async function netlifyAppEngineHandler(
 
   // Generate a unique nonce for this request
   const nonce = generateNonce();
+  console.log('Generated CSP nonce:', nonce);
 
   // Make nonce available globally for Angular's CSP_NONCE
   (globalThis as any).cspNonce = nonce;
@@ -92,18 +93,14 @@ export async function netlifyAppEngineHandler(
   const result = await angularApp.handle(request, enhancedContext);
 
   if (result) {
-    // Clone the response to modify headers
-    const response = new Response(result.body, {
-      status: result.status,
-      statusText: result.statusText,
-      headers: new Headers(result.headers),
-    });
+    // Create new headers including CSP with nonce
+    const headers = new Headers(result.headers);
 
-    // Set CSP header with nonce
+    // Set CSP header with nonce - proper formatting with semicolons and spaces
     const cspPolicy = [
       "default-src 'self'",
       `script-src 'self' 'nonce-${nonce}'`,
-      `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`, // unsafe-inline needed for some Angular styles
+      `style-src 'self' 'nonce-${nonce}' 'unsafe-inline'`,
       "font-src 'self' data:",
       "img-src 'self' data: https:",
       "connect-src 'self'",
@@ -116,15 +113,24 @@ export async function netlifyAppEngineHandler(
       'upgrade-insecure-requests',
     ].join('; ');
 
-    response.headers.set('Content-Security-Policy', cspPolicy);
-    response.headers.set('X-Content-Type-Options', 'nosniff');
-    response.headers.set('X-Frame-Options', 'DENY');
-    response.headers.set('X-XSS-Protection', '1; mode=block');
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    response.headers.set(
+    console.log('Setting CSP policy:', cspPolicy);
+
+    headers.set('Content-Security-Policy', cspPolicy);
+    headers.set('X-Content-Type-Options', 'nosniff');
+    headers.set('X-Frame-Options', 'DENY');
+    headers.set('X-XSS-Protection', '1; mode=block');
+    headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    headers.set(
       'Permissions-Policy',
       'camera=(), microphone=(), geolocation=()'
     );
+
+    // Create a new response with the updated headers
+    const response = new Response(result.body, {
+      status: result.status,
+      statusText: result.statusText,
+      headers: headers,
+    });
 
     return response;
   }
