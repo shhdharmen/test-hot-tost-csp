@@ -84,53 +84,58 @@ export async function netlifyAppEngineHandler(
     body = body.replace(/<script([^>]*?)>/g, `<script$1 nonce="${nonce}">`);
 
     // Inject a script to handle dynamically created scripts at runtime
-    const nonceScript = `
-    <script nonce="${nonce}">
-      (function() {
-        const nonce = '${nonce}';
-        console.log('Runtime nonce handler loaded with nonce:', nonce);
-        
-        // Override createElement to automatically add nonce to script elements
-        const originalCreateElement = document.createElement;
-        document.createElement = function(tagName) {
-          const element = originalCreateElement.call(this, tagName);
-          if (tagName.toLowerCase() === 'script' && nonce) {
-            element.setAttribute('nonce', nonce);
-            console.log('Added nonce to dynamically created script:', nonce);
-          }
-          return element;
-        };
-        
-        // Also watch for any script elements added via innerHTML or other methods
-        const observer = new MutationObserver(function(mutations) {
-          mutations.forEach(function(mutation) {
-            mutation.addedNodes.forEach(function(node) {
-              if (node.nodeType === 1) { // Element node
-                if (node.tagName === 'SCRIPT' && !node.getAttribute('nonce') && nonce) {
-                  node.setAttribute('nonce', nonce);
-                  console.log('Added nonce to observed script element:', nonce);
-                }
-                // Check child script elements too
-                const scriptTags = node.querySelectorAll && node.querySelectorAll('script');
-                if (scriptTags) {
-                  scriptTags.forEach(function(script) {
-                    if (!script.getAttribute('nonce') && nonce) {
-                      script.setAttribute('nonce', nonce);
-                      console.log('Added nonce to child script element:', nonce);
-                    }
-                  });
-                }
-              }
-            });
-          });
-        });
-        
-        observer.observe(document.body || document.documentElement, {
-          childList: true,
-          subtree: true
-        });
-      })();
-    </script>`;
+    const escapedNonce = nonce.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const nonceScript =
+      '<script nonce="' +
+      escapedNonce +
+      '">\n' +
+      '  (function() {\n' +
+      "    const nonce = '" +
+      escapedNonce +
+      "';\n" +
+      "    console.log('Runtime nonce handler loaded with nonce:', nonce);\n" +
+      '    \n' +
+      '    // Override createElement to automatically add nonce to script elements\n' +
+      '    const originalCreateElement = document.createElement;\n' +
+      '    document.createElement = function(tagName) {\n' +
+      '      const element = originalCreateElement.call(this, tagName);\n' +
+      "      if (tagName.toLowerCase() === 'script' && nonce) {\n" +
+      "        element.setAttribute('nonce', nonce);\n" +
+      "        console.log('Added nonce to dynamically created script:', nonce);\n" +
+      '      }\n' +
+      '      return element;\n' +
+      '    };\n' +
+      '    \n' +
+      '    // Also watch for any script elements added via innerHTML or other methods\n' +
+      '    const observer = new MutationObserver(function(mutations) {\n' +
+      '      mutations.forEach(function(mutation) {\n' +
+      '        mutation.addedNodes.forEach(function(node) {\n' +
+      '          if (node.nodeType === 1) { // Element node\n' +
+      "            if (node.tagName === 'SCRIPT' && !node.getAttribute('nonce') && nonce) {\n" +
+      "              node.setAttribute('nonce', nonce);\n" +
+      "              console.log('Added nonce to observed script element:', nonce);\n" +
+      '            }\n' +
+      '            // Check child script elements too\n' +
+      "            const scriptTags = node.querySelectorAll && node.querySelectorAll('script');\n" +
+      '            if (scriptTags) {\n' +
+      '              scriptTags.forEach(function(script) {\n' +
+      "                if (!script.getAttribute('nonce') && nonce) {\n" +
+      "                  script.setAttribute('nonce', nonce);\n" +
+      "                  console.log('Added nonce to child script element:', nonce);\n" +
+      '                }\n' +
+      '              });\n' +
+      '            }\n' +
+      '          }\n' +
+      '        });\n' +
+      '      });\n' +
+      '    });\n' +
+      '    \n' +
+      '    observer.observe(document.body || document.documentElement, {\n' +
+      '      childList: true,\n' +
+      '      subtree: true\n' +
+      '    });\n' +
+      '  })();\n' +
+      '</script>';
 
     // Insert the nonce script before the closing </head> tag
     body = body.replace('</head>', nonceScript + '\n</head>');
